@@ -5,11 +5,15 @@ a Google Docs Spreadsheet, it shows the upcoming matches, let's you fill in matc
 
 ## Get started
 1. Create a spreadsheet with the tournament schedule. 
-2. Store the secrets to connect with the spreadsheet in .streamlit/secrets.toml.
+2. Add password to open app to .streamlit/secrets.toml.
+3. Store the secrets to connect with the spreadsheet in .streamlit/secrets.toml.
 
 ### Example secrets.toml:
 
-```[connections.gsheets]
+```
+password = ""
+
+[connections.gsheets]
 spreadsheet = ""
 
 type = "service_account"
