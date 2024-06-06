@@ -78,9 +78,8 @@ def compute_standings(df_results):
     return df_team_scores
 
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab3, tab4 = st.tabs(
     ["Komende wedstrijden",
-     "Uitslagen invullen",
      "Huidige stand",
      "Finales"])
 
@@ -102,77 +101,18 @@ with tab1:
     if st.checkbox('Laat alle wedstrijden zien'):
         st.dataframe(df_schema, hide_index=True)
 
-
-with tab2:
-    st.header('Uitslagen invullen')
-    tab2a, tab2b = st.tabs(
-        ["Per tijdstip",
-         "Per toernooi"
-         ]
-    )
-    with tab2a:
-        selected_time = st.selectbox('Tijdstip', match_times_list)
-
-        edited_data = st.data_editor(
-            df_results[df_results['match_time'] == selected_time],
-            disabled=cols,
-            column_config={
-                'score_thuis': st.column_config.NumberColumn('Score thuisteam',
-                                                             min_value=0,
-                                                             max_value=20),
-                'score_uit': st.column_config.NumberColumn('Score uitteam',
-                                                           min_value=0,
-                                                           max_value=20)
-            },
-            hide_index=True
-        )
-
-        if st.button('Sla uitslagen op', key='per_timeslot'):
-            new_data = pd.concat([df_results, edited_data]).drop_duplicates(
-                ['match_time', 'home_team', 'away_team'],
-                keep='last'
-            ).sort_values('match_time')
-            conn.update(worksheet="resultaten", data=new_data)
-            st.success('Uitslagen opgeslagen!')
-
-    with tab2b:
-        selected_tournament = st.selectbox('Toernooi', tournaments_list)
-
-        edited_data = st.data_editor(
-            df_results[df_results['tournament'] == selected_tournament],
-            disabled=cols,
-            column_config={
-                'score_thuis': st.column_config.NumberColumn('Score thuisteam',
-                                                             min_value=0,
-                                                             max_value=20),
-                'score_uit': st.column_config.NumberColumn('Score uitteam',
-                                                           min_value=0,
-                                                           max_value=20)
-            },
-            hide_index=True
-        )
-
-        if st.button('Sla uitslagen op', key='per_tournament'):
-            new_data = pd.concat([df_results, edited_data]).drop_duplicates(
-                ['match_time', 'home_team', 'away_team'],
-                keep='last'
-            ).sort_values('match_time')
-            conn.update(worksheet="resultaten", data=new_data)
-            st.success('Uitslagen opgeslagen!')
-
 with tab3:
     st.header('Stand')
-    if st.button('Bereken stand'):
-        df_team_scores = compute_standings(df_results)
+    df_team_scores = compute_standings(df_results)
 
-        tabs = st.tabs(tournaments_list)
-        for i, tab in enumerate(tabs):
-            with tab:
-                df_scores_tournament = df_team_scores[df_team_scores['tournament'] == tournaments_list[i]]
-                for group, data in df_scores_tournament.groupby('group'):
-                    st.subheader(group)
-                    st.dataframe(data[['team', 'total_points', 'goals_for', 'goals_against', 'goal_difference']],
-                                 hide_index=True)
+    tabs = st.tabs(tournaments_list)
+    for i, tab in enumerate(tabs):
+        with tab:
+            df_scores_tournament = df_team_scores[df_team_scores['tournament'] == tournaments_list[i]]
+            for group, data in df_scores_tournament.groupby('group'):
+                st.subheader(group)
+                st.dataframe(data[['team', 'total_points', 'goals_for', 'goals_against', 'goal_difference']],
+                             hide_index=True)
 
 
 with tab4:
