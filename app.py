@@ -6,6 +6,7 @@ import pandas as pd
 
 AUTHORIZED_EMAILS = st.secrets.authorization.emails
 is_authorized = st.experimental_user.email in AUTHORIZED_EMAILS
+st.write(st.experimental_user.email)
 
 st.set_page_config(layout='wide')
 st.title('Amelisweerdcup 2024')
