@@ -13,6 +13,8 @@ st.logo('amelisweerdcup_logo.png')
 
 cols = ['match_time', 'pitch', 'referee', 'home_team', 'away_team', 'group', 'tournament']
 
+st.write(st.experimental_user.email)
+
 
 @st.cache_resource(show_spinner='Connecting with Spreadsheet')
 def get_sheet_connection():
