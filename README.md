@@ -6,7 +6,6 @@ a Google Docs Spreadsheet, it shows the upcoming matches, let's you fill in matc
 ## Get started
 1. Create a spreadsheet with the tournament schedule. 
 2. Store the secrets to connect with the spreadsheet in .streamlit/secrets.toml.
-3. Add admin user emailadresses to secrets.toml. These people will be authorized to write results.
 
 ### Example secrets.toml:
 
@@ -23,7 +22,4 @@ auth_uri = ""
 token_uri = ""
 auth_provider_x509_cert_url = ""
 client_x509_cert_url = ""
-
-[authorization]
-emails = ["", ""]
 ```

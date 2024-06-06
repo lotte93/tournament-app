@@ -3,17 +3,12 @@ from streamlit_gsheets import GSheetsConnection
 import datetime
 import pandas as pd
 
-AUTHORIZED_EMAILS = st.secrets.authorization.emails
-is_authorized = st.experimental_user.email in AUTHORIZED_EMAILS
-
 st.set_page_config(layout='wide')
 st.title('Amelisweerdcup 2024')
 
 st.logo('amelisweerdcup_logo.png')
 
 cols = ['match_time', 'pitch', 'referee', 'home_team', 'away_team', 'group', 'tournament']
-
-st.write(st.experimental_user.email)
 
 
 @st.cache_resource(show_spinner='Connecting with Spreadsheet')
@@ -110,63 +105,60 @@ with tab1:
 
 with tab2:
     st.header('Uitslagen invullen')
-    if is_authorized:
-        tab2a, tab2b = st.tabs(
-            ["Per tijdstip",
-             "Per toernooi"
-             ]
+    tab2a, tab2b = st.tabs(
+        ["Per tijdstip",
+         "Per toernooi"
+         ]
+    )
+    with tab2a:
+        selected_time = st.selectbox('Tijdstip', match_times_list)
+
+        edited_data = st.data_editor(
+            df_results[df_results['match_time'] == selected_time],
+            disabled=cols,
+            column_config={
+                'score_thuis': st.column_config.NumberColumn('Score thuisteam',
+                                                             min_value=0,
+                                                             max_value=20),
+                'score_uit': st.column_config.NumberColumn('Score uitteam',
+                                                           min_value=0,
+                                                           max_value=20)
+            },
+            hide_index=True
         )
-        with tab2a:
-            selected_time = st.selectbox('Tijdstip', match_times_list)
 
-            edited_data = st.data_editor(
-                df_results[df_results['match_time'] == selected_time],
-                disabled=cols,
-                column_config={
-                    'score_thuis': st.column_config.NumberColumn('Score thuisteam',
-                                                                 min_value=0,
-                                                                 max_value=20),
-                    'score_uit': st.column_config.NumberColumn('Score uitteam',
-                                                               min_value=0,
-                                                               max_value=20)
-                },
-                hide_index=True
-            )
+        if st.button('Sla uitslagen op', key='per_timeslot'):
+            new_data = pd.concat([df_results, edited_data]).drop_duplicates(
+                ['match_time', 'home_team', 'away_team'],
+                keep='last'
+            ).sort_values('match_time')
+            conn.update(worksheet="resultaten", data=new_data)
+            st.success('Uitslagen opgeslagen!')
 
-            if st.button('Sla uitslagen op', key='per_timeslot'):
-                new_data = pd.concat([df_results, edited_data]).drop_duplicates(
-                    ['match_time', 'home_team', 'away_team'],
-                    keep='last'
-                ).sort_values('match_time')
-                conn.update(worksheet="resultaten", data=new_data)
-                st.success('Uitslagen opgeslagen!')
+    with tab2b:
+        selected_tournament = st.selectbox('Toernooi', tournaments_list)
 
-        with tab2b:
-            selected_tournament = st.selectbox('Toernooi', tournaments_list)
+        edited_data = st.data_editor(
+            df_results[df_results['tournament'] == selected_tournament],
+            disabled=cols,
+            column_config={
+                'score_thuis': st.column_config.NumberColumn('Score thuisteam',
+                                                             min_value=0,
+                                                             max_value=20),
+                'score_uit': st.column_config.NumberColumn('Score uitteam',
+                                                           min_value=0,
+                                                           max_value=20)
+            },
+            hide_index=True
+        )
 
-            edited_data = st.data_editor(
-                df_results[df_results['tournament'] == selected_tournament],
-                disabled=cols,
-                column_config={
-                    'score_thuis': st.column_config.NumberColumn('Score thuisteam',
-                                                                 min_value=0,
-                                                                 max_value=20),
-                    'score_uit': st.column_config.NumberColumn('Score uitteam',
-                                                               min_value=0,
-                                                               max_value=20)
-                },
-                hide_index=True
-            )
-
-            if st.button('Sla uitslagen op', key='per_tournament'):
-                new_data = pd.concat([df_results, edited_data]).drop_duplicates(
-                    ['match_time', 'home_team', 'away_team'],
-                    keep='last'
-                ).sort_values('match_time')
-                conn.update(worksheet="resultaten", data=new_data)
-                st.success('Uitslagen opgeslagen!')
-    else:
-        st.warning('Je bent niet bevoegd om uitslagen in te vullen.')
+        if st.button('Sla uitslagen op', key='per_tournament'):
+            new_data = pd.concat([df_results, edited_data]).drop_duplicates(
+                ['match_time', 'home_team', 'away_team'],
+                keep='last'
+            ).sort_values('match_time')
+            conn.update(worksheet="resultaten", data=new_data)
+            st.success('Uitslagen opgeslagen!')
 
 with tab3:
     st.header('Stand')
