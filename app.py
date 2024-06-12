@@ -20,7 +20,7 @@ upcoming_matches_tab = UpcomingMatchesTab(language_dict)
 standings_tab = StandingsTab(language_dict, show_compute_button=False)
 finals_tab = FinalsTab(language_dict)
 
-tabs_to_show = [upcoming_matches_tab, standings_tab, finals_tab]
+tabs_to_show = [standings_tab, upcoming_matches_tab, finals_tab]
 
 tabs = st.tabs([tab.name for tab in tabs_to_show])
 
