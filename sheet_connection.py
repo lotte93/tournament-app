@@ -11,7 +11,8 @@ def get_sheet_connection():
 @st.cache_data(show_spinner='Ophalen schema')
 def get_schema():
     df_schema = get_sheet_connection().read(worksheet='schema', ttl=5)
-    df_schema = df_schema[COLS]
+    cols_to_keep = ['match_id'] + COLS
+    df_schema = df_schema[cols_to_keep]
     df_schema = df_schema[df_schema['match_time'].notnull()]
     return df_schema
 
@@ -19,7 +20,7 @@ def get_schema():
 @st.cache_data(ttl=5, show_spinner='Ophalen resultaten')
 def get_results():
     df_results = get_sheet_connection().read(worksheet='resultaten', ttl=5)
-    cols_to_keep = COLS + ['score_home', 'score_away']
+    cols_to_keep = ['match_id'] + COLS + ['score_home', 'score_away']
     df_results = df_results[cols_to_keep]
     df_results = df_results[df_results['match_time'].notnull()]
     return df_results

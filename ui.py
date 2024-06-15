@@ -34,15 +34,20 @@ class UpcomingMatchesTab(Tab):
         self._show_all_matches()
 
     def _show_current_time_matches(self):
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.now() - datetime.timedelta(hours=2, minutes=0)
         if st.button(self.language_dict.get('new_timeslot')):
-            current_time = datetime.datetime.now()
+            current_time = datetime.datetime.now() - datetime.timedelta(hours=2, minutes=0)
         st.write(f"{self.language_dict.get('the_time_is')} {current_time.strftime('%H:%M')}.")
         match_times = pd.to_datetime(st.session_state.df_schema['match_time'])
         minutes_difference = match_times.apply(
             lambda x: (x.hour - current_time.hour) * 60 + (x.minute - current_time.minute)
         )
-        st.dataframe(st.session_state.df_schema[minutes_difference.between(0, 25)], hide_index=True)
+        next_time = st.session_state.df_schema[minutes_difference.between(0, 25)]['match_time'].unique()[0]
+        match_times_list = st.session_state.df_schema['match_time'].unique().tolist()
+        selected_time = st.selectbox(self.language_dict.get('timeslot'), match_times_list, index=match_times_list.index(next_time))
+        data_to_show = st.session_state.df_schema[st.session_state.df_schema['match_time'] == selected_time]
+        st.dataframe(data_to_show, hide_index=True)
+
 
     def _show_all_matches(self):
         if st.checkbox(self.language_dict.get('show_matches')):
@@ -75,9 +80,9 @@ class WriteResultsTab(Tab):
     def _show_and_write_results(self, df_results, edited_data, button_key):
         if st.button(self.language_dict.get('store_results'), key=button_key):
             new_data = pd.concat([df_results, edited_data]).drop_duplicates(
-                ['match_time', 'home_team', 'away_team'],
+                ['match_id', 'match_time', 'home_team', 'away_team'],
                 keep='last'
-            ).sort_values('match_time')
+            ).sort_values('match_id')
             write_results(new_data)
             st.success(self.language_dict.get('store_results_success'))
             st.balloons()
@@ -86,7 +91,7 @@ class WriteResultsTab(Tab):
     def _edit_results(self, data_to_show):
         return st.data_editor(
             data_to_show,
-            disabled=COLS,
+            disabled=['match_id'] + COLS,
             column_config={
                 'score_home': st.column_config.NumberColumn(self.language_dict.get('score_home'),
                                                             min_value=0,
@@ -149,4 +154,8 @@ class FinalsTab(Tab):
 
     def generate_ui(self):
         self.generate_header_and_subheader()
+        is_final = ~st.session_state.df_schema['group'].apply(lambda x: x.startswith('Poule'))
+        finals = st.session_state.df_schema[is_final]
+        df_team_scores = compute_standings(st.session_state.df_results)
+        st.dataframe(finals)
         # st.dataframe(st.session_state.df_schema[~(st.session_state.df_schema['group'].astype(str).startswith('Poule'))])
