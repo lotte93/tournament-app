@@ -42,7 +42,6 @@ class UpcomingMatchesTab(Tab):
         minutes_difference = match_times.apply(
             lambda x: (x.hour - current_time.hour) * 60 + (x.minute - current_time.minute)
         )
-        next_time = st.session_state.df_schema[minutes_difference.between(0, 25)]['match_time'].unique()[0]
         match_times_list = st.session_state.df_schema['match_time'].unique().tolist()
         selected_time = st.selectbox(self.language_dict.get('timeslot'), match_times_list)
         data_to_show = st.session_state.df_schema[st.session_state.df_schema['match_time'] == selected_time]
