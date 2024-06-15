@@ -43,7 +43,7 @@ class UpcomingMatchesTab(Tab):
             lambda x: (x.hour - current_time.hour) * 60 + (x.minute - current_time.minute)
         )
         match_times_list = st.session_state.df_schema['match_time'].unique().tolist()
-        selected_time = st.selectbox(self.language_dict.get('timeslot'), match_times_list)
+        selected_time = st.selectbox(self.language_dict.get('timeslot'), match_times_list, key='tm')
         data_to_show = st.session_state.df_schema[st.session_state.df_schema['match_time'] == selected_time]
         st.dataframe(data_to_show, hide_index=True)
 
