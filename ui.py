@@ -39,18 +39,20 @@ class UpcomingMatchesTab(Tab):
         data_to_show = st.session_state.df_schema[st.session_state.df_schema['match_time'] == selected_time]
         st.dataframe(data_to_show, hide_index=True)
 
-
     def _show_all_matches(self):
-        if st.checkbox(self.language_dict.get('show_matches')):
-            st.dataframe(st.session_state.df_schema, hide_index=True)
+        st.dataframe(st.session_state.df_schema, hide_index=True)
 
 
 class WriteResultsTab(Tab):
-    def __init__(self, language_dict: dict, show_per_tournament: bool = True):
+    def __init__(self,
+                 language_dict: dict,
+                 show_per_tournament: bool = True,
+                 show_per_date: bool = False):
         super().__init__(name=language_dict.get('write_results_title'),
                          subheader=language_dict.get('write_results_sh'))
         self.language_dict = language_dict
         self.show_per_tournament = show_per_tournament
+        self.show_per_date = show_per_date
 
     def generate_ui(self):
         self.generate_header_and_subheader()
@@ -62,11 +64,11 @@ class WriteResultsTab(Tab):
                  ]
             )
             with tab_a:
-                self._per_time_slot()
+                self._per_date() if self.show_per_date else self._per_time_slot()
             with tab_b:
                 self._per_tournament()
         else:
-            self._per_time_slot()
+            self._per_date() if self.show_per_date else self._per_time_slot()
 
     def _show_and_write_results(self, df_results, edited_data, button_key):
         if st.button(self.language_dict.get('store_results'), key=button_key):
@@ -107,6 +109,14 @@ class WriteResultsTab(Tab):
         data_to_show = st.session_state.df_results[st.session_state.df_results['tournament'] == selected_tournament]
         edited_data = self._edit_results(data_to_show)
         self._show_and_write_results(st.session_state.df_results, edited_data, button_key='per_tournament')
+
+    def _per_date(self):
+        datetimes = pd.to_datetime(st.session_state.df_results['match_time'])
+        dates = datetimes.dt.date.unique().tolist()
+        selected_date = st.selectbox(self.language_dict.get('date'), dates)
+        data_to_show = st.session_state.df_results[datetimes.dt.date == selected_date]
+        edited_data = self._edit_results(data_to_show)
+        self._show_and_write_results(st.session_state.df_results, edited_data, button_key='per_date')
 
 
 class StandingsTab(Tab):
