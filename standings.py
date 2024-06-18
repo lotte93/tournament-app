@@ -27,6 +27,7 @@ def compute_standings(df_results):
         ['tournament', 'group', 'team'],
         as_index=False
     ).agg(
+        nr_matches=('score_team', 'count'),
         total_points=('points', 'sum'),
         goals_for=('score_team', 'sum'),
         goals_against=('score_opponent', 'sum')

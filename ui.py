@@ -34,14 +34,6 @@ class UpcomingMatchesTab(Tab):
         self._show_all_matches()
 
     def _show_current_time_matches(self):
-        current_time = datetime.datetime.now() - datetime.timedelta(hours=2, minutes=0)
-        if st.button(self.language_dict.get('new_timeslot')):
-            current_time = datetime.datetime.now() - datetime.timedelta(hours=2, minutes=0)
-        st.write(f"{self.language_dict.get('the_time_is')} {current_time.strftime('%H:%M')}.")
-        match_times = pd.to_datetime(st.session_state.df_schema['match_time'])
-        minutes_difference = match_times.apply(
-            lambda x: (x.hour - current_time.hour) * 60 + (x.minute - current_time.minute)
-        )
         match_times_list = st.session_state.df_schema['match_time'].unique().tolist()
         selected_time = st.selectbox(self.language_dict.get('timeslot'), match_times_list, key='tm')
         data_to_show = st.session_state.df_schema[st.session_state.df_schema['match_time'] == selected_time]
@@ -141,8 +133,10 @@ class StandingsTab(Tab):
                 df_scores_tournament = df_team_scores[df_team_scores['tournament'] == tournaments_list[i]]
                 for group, data in df_scores_tournament.groupby('group'):
                     st.subheader(group)
-                    st.dataframe(data[['team', 'total_points', 'goals_for', 'goals_against', 'goal_difference']],
-                                 hide_index=True)
+                    st.dataframe(
+                        data[['team', 'nr_matches', 'total_points', 'goals_for', 'goals_against', 'goal_difference']],
+                        hide_index=True
+                    )
 
 
 class FinalsTab(Tab):
@@ -157,4 +151,3 @@ class FinalsTab(Tab):
         finals = st.session_state.df_schema[is_final]
         df_team_scores = compute_standings(st.session_state.df_results)
         st.dataframe(finals)
-        # st.dataframe(st.session_state.df_schema[~(st.session_state.df_schema['group'].astype(str).startswith('Poule'))])
