@@ -10,8 +10,8 @@ st.title('Zomer Avond Toernooi 2024')
 language = 'dutch'
 language_dict = get_language_dict(language)
 
-if not check_password(language_dict):
-    st.stop()  # Do not continue if correct password not provided.
+# if not check_password(language_dict):
+#     st.stop()  # Do not continue if correct password not provided.
 
 if 'df_schema' not in st.session_state:
     st.session_state.df_schema = get_schema()
@@ -23,10 +23,14 @@ upcoming_matches_tab = UpcomingMatchesTab(language_dict, show_current_time=False
 write_results_tab = WriteResultsTab(language_dict, show_per_date=True)
 standings_tab = StandingsTab(language_dict)
 
-tabs_to_show = [upcoming_matches_tab, write_results_tab, standings_tab]
+tabs_to_show = [upcoming_matches_tab, standings_tab, write_results_tab]
 
 tabs = st.tabs([tab.name for tab in tabs_to_show])
 
 for i, tab in enumerate(tabs):
     with tab:
-        tabs_to_show[i].generate_ui()
+        if tabs_to_show[i].name == language_dict.get('write_results_title'):
+            if check_password(language_dict):
+                tabs_to_show[i].generate_ui()
+        else:
+            tabs_to_show[i].generate_ui()
